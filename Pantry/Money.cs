@@ -101,7 +101,7 @@
 
         public override int GetHashCode() => HashCode.Combine(this.Sum, this.Currency);
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (ReferenceEquals(obj, null))
                 return false;

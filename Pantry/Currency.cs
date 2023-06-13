@@ -4,7 +4,6 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
-    using System.Runtime.CompilerServices;
 
     public abstract class Currency : IEquatable<Currency>, IComparable<Currency>
     {
@@ -246,12 +245,12 @@
             return true;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is Currency other && Equals(other);
         }
 
-        public bool Equals(Currency other)
+        public bool Equals(Currency? other)
         {
             if (other is null)
                 return false;
@@ -266,7 +265,7 @@
 
         public override int GetHashCode() => HashCode.Combine(this.Name, this.Code, this.Symbol);
 
-        public int CompareTo(Currency other)
+        public int CompareTo(Currency? other)
         {
             if (other is null)
                 return 1;

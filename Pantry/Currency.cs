@@ -10,6 +10,7 @@
     {
         private enum NotationCategory
         {
+            None,
             Sum,
             Unit,
         }
@@ -25,23 +26,7 @@
             public ReadOnlySpan<char> Span { get; }
             public NotationCategory Category { get; }
 
-            public static bool operator ==(NotationSpan left, NotationSpan right) => left.Equals(right);
-
-            public static bool operator !=(NotationSpan left, NotationSpan right) => !left.Equals(right);
-
             public static implicit operator ReadOnlySpan<char>(NotationSpan note) => note.Span;
-
-            public override string ToString() => this.Span.ToString();
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public bool Equals(NotationSpan other)
-            {
-                return this.Span == other.Span && this.Category == other.Category;
-            }
-
-            public override bool Equals(object obj) => throw new NotSupportedException();
-
-            public override int GetHashCode() => throw new NotSupportedException();
         }
 
         private ref struct NotationEnumerator
@@ -211,7 +196,7 @@
 
             foreach (var note in Denote(writing))
             {
-                if (sum != default && unit != default)
+                if (sum.Category != NotationCategory.None && unit.Category != NotationCategory.None)
                 {
                     if (TryParseSum(sum, out var value))
                     {
@@ -235,13 +220,13 @@
                 }
             }
 
-            if (sum == default || !TryParseSum(sum, out var remainder))
+            if (sum.Category == NotationCategory.None || !TryParseSum(sum, out var remainder))
             {
                 return false;
             }
 
             var currency = money.Currency ?? this;
-            if (unit != default)
+            if (unit.Category != NotationCategory.None)
             {
                 var remainderMoney = GetMoney(remainder, unit);
                 if (remainderMoney != default && remainderMoney.Currency != currency)

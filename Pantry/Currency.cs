@@ -52,7 +52,7 @@
             public NotationEnumerator(Currency currency, ReadOnlySpan<char> writing)
             {
                 this.currency = currency;
-                this.writing = writing;
+                this.writing = writing.Trim();
                 this.Current = default;
             }
 
@@ -70,14 +70,16 @@
                 if (currency.numericChars.Contains(this.writing[0]))
                 {
                     // sum
-                    endPos = this.writing.ClampStart(0, currency.numericChars);
+                    endPos = this.writing.IndexOfAnyExcept(currency.numericChars);
                 }
                 else
                 {
                     // unit
                     category = NotationCategory.Unit;
-                    endPos = this.writing.ClampStartUntil(0, currency.numericChars);
+                    endPos = this.writing.IndexOfAny(currency.numericChars);
                 }
+                if (endPos < 0)
+                    endPos = this.writing.Length;
 
                 this.Current = new NotationSpan(this.writing[..endPos], category);
                 this.writing = this.writing[endPos..];

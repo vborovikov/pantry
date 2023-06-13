@@ -67,14 +67,17 @@
             Assert.AreEqual("₺42.000", lira.ToString());
         }
 
-        [TestMethod]
-        public void TryParse_SpaceAfterMoney_Parsed()
+        [DataTestMethod]
+        [DataRow("1000 руб.    ", 1000d, "RUB", "1 000 руб.")]
+        [DataRow("    1000 руб.", 1000d, "RUB", "1 000 руб.")]
+        [DataRow("    1000 руб.    ", 1000d, "RUB", "1 000 руб.")]
+        public void TryParse_WhitespaceMoney_Parsed(string writing, double sum, string currencyCode, string text)
         {
-            Assert.IsTrue(Money.TryParse("1000 руб.    ", out var rub));
+            Assert.IsTrue(Money.TryParse(writing, out var rub));
 
-            Assert.AreEqual(1000m, rub.Sum);
-            Assert.AreEqual("RUB", rub.Currency.Code);
-            Assert.AreEqual("1000 руб.", rub.ToString());
+            Assert.AreEqual((decimal)sum, rub.Sum);
+            Assert.AreEqual(currencyCode, rub.Currency.Code);
+            Assert.AreEqual(text, rub.ToString());
         }
     }
 }

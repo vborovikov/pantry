@@ -6,4 +6,23 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>PantryLib</PackageId>
+    <Title>Pantry</Title>
+    <Description>Custom data types for working with fractions, measurements, and money</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageProjectUrl>https://github.com/vborovikov/pantry</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/vborovikov/pantry.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>
+      fractions;fractional;measure;measurements;measurement-units;metric;imperial;customary;money;currency;currency-converter
+    </PackageTags>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

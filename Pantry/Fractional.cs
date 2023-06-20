@@ -3,6 +3,7 @@
 namespace Pantry
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Runtime.CompilerServices;
 
@@ -10,7 +11,7 @@ namespace Pantry
     /// The main Fractional struct that allows parsing and working with fractinal expressions.
     /// </summary>
     public readonly struct Fractional : IEquatable<Fractional>, IEquatable<float>,
-        IComparable<Fractional>, IComparable<float>, ISpanFormattable
+        IComparable<Fractional>, IComparable<float>, ISpanFormattable, ISpanParsable<Fractional>, IFiniteSpanParsable<Fractional>
     {
         private enum CompositionPartCategory
         {
@@ -54,7 +55,7 @@ namespace Pantry
             private int index;
             private readonly NumberFormatInfo numberFormat;
 
-            public CompositionEnumerator(ReadOnlySpan<char> writing, IFormatProvider formatProvider)
+            public CompositionEnumerator(ReadOnlySpan<char> writing, IFormatProvider? formatProvider)
             {
                 this.writing = writing;
                 this.index = 0;
@@ -133,9 +134,9 @@ namespace Pantry
             }
         }
 
-        public static readonly Fractional NaN = new Fractional(0, 0);
-        public static readonly Fractional Zero = new Fractional(0, 1);
-        public static readonly Fractional One = new Fractional(1, 1);
+        public static readonly Fractional NaN = new(0, 0);
+        public static readonly Fractional Zero = new(0, 1);
+        public static readonly Fractional One = new(1, 1);
 
         private const char Backslash = '\\';
         private const char Virgule = '/';
@@ -211,28 +212,39 @@ namespace Pantry
         /// </summary>
         public static bool IsNaN(Fractional fractional) => fractional.denominator == 0;
 
-        public static Fractional Parse(ReadOnlySpan<char> span, IFormatProvider formatProvider = null)
+        public static Fractional Parse(string s, IFormatProvider? provider) =>
+            Parse(s.AsSpan(), provider);
+
+        public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Fractional result) =>
+            TryParse(s.AsSpan(), provider, out result);
+
+        public static Fractional Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
         {
-            if (!TryParse(span, formatProvider, out var result))
+            if (TryParse(s, provider, out var result, out _))
             {
-                throw new FormatException();
+                return result;
             }
 
-            return result;
+            throw new FormatException();
         }
+
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Fractional result) =>
+            TryParse(s, provider, out result, out _);
+
+        public static Fractional Parse(ReadOnlySpan<char> span) =>
+            Parse(span, null);
 
         public static bool TryParse(ReadOnlySpan<char> span, out Fractional result) =>
             TryParse(span, null, out result);
 
-        public static bool TryParse(ReadOnlySpan<char> span, IFormatProvider formatProvider, out Fractional result) =>
-            TryParseRaw(span, formatProvider, out result) > 0;
-
-        public static int TryParseRaw(ReadOnlySpan<char> span, IFormatProvider formatProvider, out Fractional result)
+        public static bool TryParse(ReadOnlySpan<char> span, IFormatProvider? provider, [MaybeNullWhen(false)] out Fractional result, out int charsConsumed)
         {
+            charsConsumed = 0;
+
             if (span.IsEmpty)
             {
                 result = default;
-                return 0;
+                return false;
             }
 
             var sign = 1;
@@ -240,27 +252,26 @@ namespace Pantry
             var numerator = 0;
             var denominator = 1;
             var parsingStep = ParsingStep.Sign;
-            var charsConsumed = 0;
             Span<char> number = stackalloc char[8];
-            foreach (var part in Decompose(span, formatProvider))
+            foreach (var part in Decompose(span, provider))
             {
                 if (parsingStep > ParsingStep.Vulgar)
                 {
                     result = default;
-                    return 0;
+                    return false;
                 }
 
                 charsConsumed = part.Index + part.Span.Length;
                 if (part.Category == CompositionPartCategory.RealNumber)
                 {
-                    if (Single.TryParse(part.Span, NumberStyles.Float, formatProvider, out var realNumber))
+                    if (Single.TryParse(part.Span, NumberStyles.Float, provider, out var realNumber))
                     {
                         result = realNumber;
-                        return charsConsumed;
+                        return true;
                     }
 
                     result = default;
-                    return 0;
+                    return false;
                 }
 
                 switch (parsingStep)
@@ -278,7 +289,7 @@ namespace Pantry
                             if (sign == 0)
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else
@@ -291,10 +302,10 @@ namespace Pantry
                     case ParsingStep.Integer:
                         if (part.Category == CompositionPartCategory.Number)
                         {
-                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, formatProvider, out integer))
+                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, provider, out integer))
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else if (part.Category == CompositionPartCategory.OverNumber ||
@@ -306,17 +317,17 @@ namespace Pantry
                         else
                         {
                             result = default;
-                            return 0;
+                            return false;
                         }
                         break;
 
                     case ParsingStep.Numerator:
                         if (part.Category == CompositionPartCategory.Number)
                         {
-                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, formatProvider, out numerator))
+                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, provider, out numerator))
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else if (part.Category == CompositionPartCategory.OverNumber)
@@ -327,10 +338,10 @@ namespace Pantry
                                     break;
                                 number[i] = Digits[SupDigits.IndexOf(part.Span[i])];
                             }
-                            if (!Int32.TryParse(number[..part.Span.Length], NumberStyles.Integer, formatProvider, out numerator))
+                            if (!Int32.TryParse(number[..part.Span.Length], NumberStyles.Integer, provider, out numerator))
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else if (part.Category == CompositionPartCategory.Bar)
@@ -353,7 +364,7 @@ namespace Pantry
                         else
                         {
                             result = default;
-                            return 0;
+                            return false;
                         }
                         break;
 
@@ -361,17 +372,17 @@ namespace Pantry
                         if (part.Category != CompositionPartCategory.Bar)
                         {
                             result = default;
-                            return 0;
+                            return false;
                         }
                         break;
 
                     case ParsingStep.Denominator:
                         if (part.Category == CompositionPartCategory.Number)
                         {
-                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, formatProvider, out denominator))
+                            if (!Int32.TryParse(part.Span, NumberStyles.Integer, provider, out denominator))
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else if (part.Category == CompositionPartCategory.UnderNumber)
@@ -382,16 +393,16 @@ namespace Pantry
                                     break;
                                 number[i] = Digits[SubDigits.IndexOf(part.Span[i])];
                             }
-                            if (!Int32.TryParse(number[..part.Span.Length], NumberStyles.Integer, formatProvider, out denominator))
+                            if (!Int32.TryParse(number[..part.Span.Length], NumberStyles.Integer, provider, out denominator))
                             {
                                 result = default;
-                                return 0;
+                                return false;
                             }
                         }
                         else if (part.Category != CompositionPartCategory.Vulgar)
                         {
                             result = default;
-                            return 0;
+                            return false;
                         }
                         break;
 
@@ -437,7 +448,7 @@ namespace Pantry
                         else
                         {
                             result = default;
-                            return 0;
+                            return false;
                         }
                         break;
                 }
@@ -445,8 +456,14 @@ namespace Pantry
                 ++parsingStep;
             }
 
-            result = new Fractional((Math.Abs(integer) * denominator + numerator) * sign, denominator);
-            return IsNaN(result) ? 0 : charsConsumed;
+            if (charsConsumed > 0)
+            {
+                result = new Fractional((Math.Abs(integer) * denominator + numerator) * sign, denominator);
+                return !IsNaN(result);
+            }
+
+            result = default;
+            return false;
         }
 
         public static implicit operator Fractional(int value) => From(value);
@@ -560,7 +577,7 @@ namespace Pantry
 
         public string ToString(string format) => ToString(format, null);
 
-        public string ToString(string format, IFormatProvider formatProvider)
+        public string ToString(string? format, IFormatProvider? formatProvider)
         {
             return String.Create(
                 GetFormattedLength(this.numerator, this.denominator, format, formatProvider),
@@ -568,7 +585,7 @@ namespace Pantry
                 (buffer, state) => Format(state.numerator, state.denominator, buffer, state.format, state.formatProvider));
         }
 
-        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider provider)
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
         {
             charsWritten = Format(this.numerator, this.denominator, destination, format, provider);
             if (charsWritten > 0)
@@ -609,7 +626,7 @@ namespace Pantry
             _ => '\0'
         };
 
-        private static int GetFormattedLength(int numerator, int denominator, ReadOnlySpan<char> format, IFormatProvider formatProvider)
+        private static int GetFormattedLength(int numerator, int denominator, ReadOnlySpan<char> format, IFormatProvider? formatProvider)
         {
             if (denominator == 0)
                 throw new NotFiniteNumberException();
@@ -650,7 +667,7 @@ namespace Pantry
             }
         }
 
-        private static int Format(int numerator, int denominator, Span<char> destination, ReadOnlySpan<char> format, IFormatProvider provider)
+        private static int Format(int numerator, int denominator, Span<char> destination, ReadOnlySpan<char> format, IFormatProvider? provider)
         {
             static void PlaceDigits(int n, Span<char> buffer, int end, ReadOnlySpan<char> digits)
             {
@@ -733,7 +750,7 @@ namespace Pantry
             }
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj switch
             {
@@ -798,7 +815,7 @@ namespace Pantry
             return 0;
         }
 
-        private static CompositionEnumerator Decompose(ReadOnlySpan<char> writing, IFormatProvider formatProvider) =>
+        private static CompositionEnumerator Decompose(ReadOnlySpan<char> writing, IFormatProvider? formatProvider) =>
             new CompositionEnumerator(writing, formatProvider);
 
         private static Fractional Addition(Fractional left, Fractional right)

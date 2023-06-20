@@ -10,6 +10,8 @@ namespace Pantry
 
         protected MetricUnit(CultureInfo culture) : base(culture)
         {
+            this.symbols = Array.Empty<string>();
+            this.kiloSymbols = Array.Empty<string>();
         }
 
         protected string[] Symbols
@@ -43,16 +45,22 @@ namespace Pantry
             return 0;
         }
 
-        public override string ToString(Measure measure, IFormatProvider formatProvider)
+        public override string ToString(in Measure measure, string? format, IFormatProvider? formatProvider)
         {
             var value = measure.Value.Value;
             if (value > 1000f && value % 1000f == 0f)
             {
                 value /= 1000f;
-                return $"{value.ToString(formatProvider)} {this.KiloSymbols[^1]}";
+                return $"{value.ToString(format, formatProvider)} {this.KiloSymbols[^1]}";
             }
 
-            return base.ToString(measure, formatProvider);
+            return base.ToString(measure, format, formatProvider);
+        }
+
+        public override bool TryFormat(in Measure measure, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            //todo: implement
+            return base.TryFormat(measure, destination, out charsWritten, format, provider);
         }
     }
 }

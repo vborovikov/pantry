@@ -50,7 +50,7 @@
 
         public abstract MeasurementType Type { get; }
 
-        public static Measure GetMeasure(Fractional value, ReadOnlySpan<char> unitSpan, IFormatProvider formatProvider, out int charsConsumed)
+        public static Measure GetMeasure(Fractional value, ReadOnlySpan<char> unitSpan, IFormatProvider? formatProvider, out int charsConsumed)
         {
             var unitNormalized = unitSpan.TrimStart();
             var charsTrimmed = unitSpan.Length - unitNormalized.Length;
@@ -69,7 +69,7 @@
                             unit.culture.Equals(formatProvider) ||
                             unit.culture.TwoLetterISOLanguageName == twoLetterISOLanguageName)
                         {
-                            //todo: pass here formatProvider so Number can use it find the right unit
+                            //todo: pass here formatProvider so Number can use it to find the right unit
                             charsConsumed = unit.TryGetMeasure(value, unitNormalized, out var result);
                             if (charsConsumed > 0)
                             {
@@ -106,15 +106,36 @@
 
         public override string ToString() => $"{this.Name} ({this.Symbol})";
 
-        public virtual string ToString(Measure measure, IFormatProvider formatProvider) => $"{measure.Value} {this.Symbol}";
+        public virtual string ToString(in Measure measure, string? format, IFormatProvider? formatProvider) =>
+            $"{measure.Value} {this.Symbol}";
 
-        public sealed override bool Equals(object obj)
+        public virtual bool TryFormat(in Measure measure, Span<char> destination, out int charsWritten, 
+            ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            charsWritten = 0;
+
+            if (!measure.Value.TryFormat(destination, out var valueCharsWritten, format, provider))
+                return false;
+            charsWritten += valueCharsWritten;
+
+            if (charsWritten == destination.Length)
+                return false;
+            destination[charsWritten++] = ' ';
+
+            if (!this.Symbol.TryCopyTo(destination[charsWritten..]))
+                return false;
+            charsWritten += this.Symbol.Length;
+
+            return true;
+        }
+
+        public sealed override bool Equals(object? obj)
         {
             var other = obj as MeasureUnit;
             return Equals(other);
         }
 
-        public bool Equals(MeasureUnit other)
+        public bool Equals(MeasureUnit? other)
         {
             if (other is null)
                 return false;
@@ -138,8 +159,7 @@
                 return false;
             }
 
-            var valueLength = Fractional.TryParseRaw(span, this.culture, out var value);
-            if (valueLength <= 0)
+            if (!Fractional.TryParse(span, this.culture, out var value, out var valueLength))
             {
                 result = default;
                 return false;

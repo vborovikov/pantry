@@ -125,6 +125,20 @@
 
         public override string ToString() => this.Code;
 
+        public static Currency FromProvider(IFormatProvider? provider)
+        {
+            if (provider is null)
+                return Default;
+
+            foreach (var currency in KnownCurrencies)
+            {
+                if (currency.culture == provider || currency.culture.NumberFormat == provider)
+                    return currency;
+            }
+
+            return Default;
+        }
+
         public static Currency FromCode(string code)
         {
             if (String.IsNullOrWhiteSpace(code))
@@ -136,7 +150,7 @@
                     return currency;
             }
 
-            return default;
+            return Default;
         }
 
         public static Money ParseMoneyExact(ReadOnlySpan<char> writing)
@@ -282,6 +296,47 @@
                 return this.WritingSymbol + sumWriting;
 
             return sumWriting + this.WritingSymbol;
+        }
+
+        public bool TryFormat(decimal sum, Span<char> destination, out int charsWritten)
+        {
+            charsWritten = 0;
+
+            if (this.SymbolPlacement == CurrencySymbolPlacement.BeforeSum)
+            {
+                if (this.WritingSymbol.TryCopyTo(destination))
+                {
+                    charsWritten += this.WritingSymbol.Length;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            var hasFraction = Math.Abs(sum % 1m) != 0m;
+            if (sum.TryFormat(destination[charsWritten..], out var sumCharsWritten, hasFraction ? "N2" : "N0", this.culture))
+            {
+                charsWritten += sumCharsWritten;
+            }
+            else
+            {
+                return false;
+            }
+
+            if (this.SymbolPlacement == CurrencySymbolPlacement.AfterSum)
+            {
+                if (this.WritingSymbol.TryCopyTo(destination[charsWritten..]))
+                {
+                    charsWritten += this.WritingSymbol.Length;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         protected decimal Convert(decimal sum, ReadOnlySpan<char> unit)

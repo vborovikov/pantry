@@ -1,6 +1,7 @@
 ﻿namespace Pantry
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Text.Json;
     using System.Text.Json.Serialization;
@@ -9,17 +10,34 @@
     /// Represents item quantity.
     /// </summary>
     [JsonConverter(typeof(JsonConverter))]
-    public readonly struct Measure :
-        IEquatable<Measure>, IEquatable<string>,
-        IComparable<Measure>, IComparable<string>
+    public readonly struct Measure : IEquatable<Measure>, IEquatable<string>, IComparable<Measure>, IComparable<string>,
+        ISpanFormattable, ISpanParsable<Measure>, IFiniteSpanParsable<Measure>
     {
         private sealed class JsonConverter : JsonConverter<Measure>
         {
-            public override Measure Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-                TryParse(reader.GetString(), out var measure) ? measure : default;
+            private const int MaxStringLength = 50;
 
-            public override void Write(Utf8JsonWriter writer, Measure value, JsonSerializerOptions options) =>
-                writer.WriteStringValue(value);
+            public override Measure Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                if (reader.TokenType == JsonTokenType.Null)
+                {
+                    return default;
+                }
+
+                Span<char> buffer = stackalloc char[MaxStringLength];
+                var charsWritten = reader.CopyString(buffer);
+                ReadOnlySpan<char> source = buffer[..charsWritten];
+                return Parse(source, null);
+            }
+
+
+            public override void Write(Utf8JsonWriter writer, Measure value, JsonSerializerOptions options)
+            {
+                Span<char> buffer = stackalloc char[MaxStringLength];
+                value.TryFormat(buffer, out var charsWritten, ReadOnlySpan<char>.Empty, null);
+                ReadOnlySpan<char> source = buffer[..charsWritten];
+                writer.WriteStringValue(source);
+            }
         }
 
         //public Measure()
@@ -37,40 +55,46 @@
 
         public MeasureUnit Unit { get; }
 
-        public static Measure Parse(ReadOnlySpan<char> span, IFormatProvider formatProvider = null)
+        public static Measure Parse(string s, IFormatProvider? provider) =>
+            Parse(s.AsSpan(), provider);
+
+        public static bool TryParse(string? s, IFormatProvider? provider, out Measure result) =>
+            TryParse(s.AsSpan(), provider, out result);
+
+        public static Measure Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
         {
-            if (!TryParse(span, formatProvider, out var result))
+            if (TryParse(s, provider, out var result, out _))
             {
-                throw new FormatException();
+                return result;
             }
 
-            return result;
+            throw new FormatException();
         }
+
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, out Measure result) =>
+            TryParse(s, provider, out result, out _);
+
+        public static Measure Parse(ReadOnlySpan<char> span) => Parse(span, null);
 
         public static bool TryParse(ReadOnlySpan<char> span, out Measure result) => TryParse(span, null, out result);
 
-        public static bool TryParse(ReadOnlySpan<char> span, IFormatProvider formatProvider, out Measure result) =>
-            TryParseRaw(span, formatProvider, out result) > 0;
-
-        public static bool TryParse(string str, IFormatProvider formatProvider, out Measure result) =>
-            TryParse(str.AsSpan(), formatProvider, out result);
-
-        public static int TryParseRaw(ReadOnlySpan<char> span, IFormatProvider formatProvider, out Measure result)
+        public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Measure result, out int charsConsumed)
         {
-            if (span.IsEmpty || span.IsWhiteSpace())
+            if (s.IsEmpty || s.IsWhiteSpace())
             {
                 result = default;
-                return 0;
+                charsConsumed = 0;
+                return false;
             }
 
-            var valueLength = Fractional.TryParseRaw(span, formatProvider, out var value);
-            if (valueLength <= 0)
+            if (!Fractional.TryParse(s, provider, out var value, out var valueLength))
             {
-                return MeasureUnit.Number.TryParseRaw(span, formatProvider, out result);
+                return MeasureUnit.Number.TryParse(s, provider, out result, out charsConsumed);
             }
 
-            result = MeasureUnit.GetMeasure(value, span[valueLength..], formatProvider, out var unitLength);
-            return valueLength + unitLength;
+            result = MeasureUnit.GetMeasure(value, s[valueLength..], provider, out var unitLength);
+            charsConsumed = valueLength + unitLength;
+            return true;
         }
 
         public static implicit operator Measure(string quantity)
@@ -153,13 +177,23 @@
             return left.CompareTo(right) <= 0;
         }
 
-        public override string ToString() =>
-            this.Unit?.ToString(this, CultureInfo.CurrentCulture) ?? String.Empty;
+        public override string ToString() => ToString(null, CultureInfo.CurrentCulture);
 
-        public string ToString(IFormatProvider formatProvider) =>
-            this.Unit?.ToString(this, formatProvider) ?? String.Empty;
+        public string ToString(string? format, IFormatProvider? formatProvider) =>
+            this.Unit?.ToString(this, format, formatProvider) ?? String.Empty;
 
-        public override bool Equals(object obj)
+        public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            if (this.Unit is null)
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            return this.Unit.TryFormat(this, destination, out charsWritten, format, provider);
+        }
+
+        public override bool Equals(object? obj)
         {
             if (Object.ReferenceEquals(obj, null))
                 return false;
@@ -181,7 +215,7 @@
                    this.Unit == other.Unit;
         }
 
-        public bool Equals(string other)
+        public bool Equals(string? other)
         {
             if (String.IsNullOrWhiteSpace(other))
                 return false;
@@ -204,7 +238,7 @@
             return this.Value.CompareTo(other.Value);
         }
 
-        public int CompareTo(string other)
+        public int CompareTo(string? other)
         {
             // If other is not a valid object reference, this instance is greater.
             if (String.IsNullOrWhiteSpace(other))

@@ -17,7 +17,7 @@ namespace Pantry
 
         protected void Add(string[] symbols, float factor, 
             float minThreshold = default, float maxThreshold = default,
-            string symbol = default, string manySymbol = default)
+            string? symbol = default, string? manySymbol = default)
         {
             //var minThreshold = this.conversionTable.Values.Select(c => c.Factor).Order().LastOrDefault(v => v < factor, factor / 2f);
             //var conversion = new Conversion(factor, minThreshold, factor * 4f, symbols[^2], symbols[^1]);
@@ -45,7 +45,7 @@ namespace Pantry
             return 0;
         }
 
-        public override string ToString(Measure measure, IFormatProvider formatProvider)
+        public override string ToString(in Measure measure, string? format, IFormatProvider? formatProvider)
         {
             var value = measure.Value.Value;
             var conversion = default(Conversion);
@@ -66,11 +66,17 @@ namespace Pantry
             {
                 var measureValue = measure.Value / conversion.Factor;
                 return measureValue.Value > 1f ?
-                    $"{measureValue.ToString(null, formatProvider)} {conversion.ManySymbol}" :
-                    $"{measureValue.ToString(null, formatProvider)} {conversion.Symbol}";
+                    $"{measureValue.ToString(format, formatProvider)} {conversion.ManySymbol}" :
+                    $"{measureValue.ToString(format, formatProvider)} {conversion.Symbol}";
             }
 
-            return base.ToString(measure, formatProvider);
+            return base.ToString(measure, format, formatProvider);
+        }
+
+        public override bool TryFormat(in Measure measure, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        {
+            //todo: implement
+            return base.TryFormat(measure, destination, out charsWritten, format, provider);
         }
     }
 }

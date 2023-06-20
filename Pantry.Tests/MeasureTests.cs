@@ -68,5 +68,67 @@
             var twoTsps = Measure.Parse("2t");
             Assert.AreEqual("2 tsps", twoTsps.ToString());
         }
+
+        [DataTestMethod]
+        [DataRow("1 шт", "1-")]
+        [DataRow("2 pcs", "2-")]
+        [DataRow("7", "7-")]
+        public void ToString_NumbersNoCulture_MinusSignAtEnd(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Assert.AreEqual(expected, q.ToString(null, null));
+        }
+
+        [DataTestMethod]
+        [DataRow("1 шт", "1-")]
+        [DataRow("2 pcs", "2-")]
+        [DataRow("7", "7-")]
+        public void TryFormat_NumbersNoCulture_MinusSignAtEnd(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Span<char> buffer = stackalloc char[25];
+            Assert.IsTrue(q.TryFormat(buffer, out var charsWritten, "", null));
+            Assert.AreEqual(expected, buffer[..charsWritten].ToString());
+        }
+
+        [DataTestMethod]
+        [DataRow("1 %", "1%")]
+        [DataRow("2%", "2%")]
+        public void ToString_PercentNoCulture_PercentSignAtEnd(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Assert.AreEqual(expected, q.ToString(null, null));
+        }
+
+        [DataTestMethod]
+        [DataRow("1 %", "1%")]
+        [DataRow("2%", "2%")]
+        public void TryFormat_PercentNoCulture_PercentSignAtEnd(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Span<char> buffer = stackalloc char[25];
+            Assert.IsTrue(q.TryFormat(buffer, out var charsWritten, "", null));
+            Assert.AreEqual(expected, buffer[..charsWritten].ToString());
+        }
+
+        [DataTestMethod]
+        [DataRow("1 large pkg", "1-")]
+        [DataRow("1 piece", "1-")]
+        [DataRow("2 cans", "2-")]
+        public void TryParse_NumberOfItems_NumberMeasureUnit(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Assert.AreEqual(expected, q.ToString(null, null));
+        }
+
+        [DataTestMethod]
+        [DataRow("one large pkg", "1-")]
+        [DataRow("two eggs", "2-")]
+        [DataRow("a hundred cans of beer", "100-")]
+        public void TryParse_NumberWords_NumberMeasureUnit(string writing, string expected)
+        {
+            var q = Measure.Parse(writing);
+            Assert.AreEqual(expected, q.ToString(null, null));
+        }
     }
 }

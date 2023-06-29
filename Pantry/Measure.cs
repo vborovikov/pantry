@@ -89,7 +89,7 @@
 
             if (!Fractional.TryParse(s, provider, out var value, out var valueLength))
             {
-                return MeasureUnit.Number.TryParse(s, provider, out result, out charsConsumed);
+                return Number.TryParse(s, provider, out result, out charsConsumed);
             }
 
             result = MeasureUnit.GetMeasure(value, s[valueLength..], provider, out var unitLength);

@@ -47,7 +47,7 @@
             return true;
         }
 
-        public bool TryParse(ReadOnlySpan<char> span, IFormatProvider? formatProvider, out Measure result, out int charsConsumed)
+        public static bool TryParse(ReadOnlySpan<char> span, IFormatProvider? formatProvider, out Measure result, out int charsConsumed)
         {
             //todo: parse number words to get Fractional, then parse the unit using GetMeasure.
 

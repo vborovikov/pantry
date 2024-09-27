@@ -1,4 +1,5 @@
-﻿#define FRACTIONAL_PARSE_FOOD
+﻿//todo: get rid of it
+#define FRACTIONAL_PARSE_FOOD
 
 namespace Pantry
 {
@@ -10,6 +11,7 @@ namespace Pantry
     /// <summary>
     /// The main Fractional struct that allows parsing and working with fractinal expressions.
     /// </summary>
+    //todo: implement INumber<> or IFloatingPoint<>
     public readonly struct Fractional : IEquatable<Fractional>, IEquatable<float>,
         IComparable<Fractional>, IComparable<float>, ISpanFormattable, ISpanParsable<Fractional>, IFiniteSpanParsable<Fractional>
     {

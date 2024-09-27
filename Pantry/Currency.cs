@@ -1,6 +1,7 @@
 ﻿namespace Pantry
 {
     using System;
+    using System.Buffers;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
@@ -86,14 +87,14 @@
         };
 
         private readonly CultureInfo culture;
-        private readonly char[] numericChars;
+        private readonly SearchValues<char> numericChars;
 
         protected Currency(CultureInfo culture)
         {
             this.culture = culture;
-            this.numericChars =
-                String.Concat(
-                    $"{NormalSpaceChar}", // inculding space characters too
+            this.numericChars = SearchValues.Create(
+                string.Concat(
+                    NormalSpaceChar.ToString(), // inculding space characters too
                     SpaceChars, // unusual space characters
                     this.culture.NumberFormat.PositiveSign,
                     this.culture.NumberFormat.NegativeSign,
@@ -101,10 +102,10 @@
                     this.culture.NumberFormat.NumberGroupSeparator,
                     this.culture.NumberFormat.CurrencyDecimalSeparator,
                     this.culture.NumberFormat.CurrencyGroupSeparator,
-                    String.Concat(this.culture.NumberFormat.NativeDigits))
+                    string.Concat(this.culture.NumberFormat.NativeDigits))
                 .Distinct()
                 .OrderBy(ch => ch)
-                .ToArray();
+                .ToArray());
         }
 
         public static Currency Default => KnownCurrencies[0];

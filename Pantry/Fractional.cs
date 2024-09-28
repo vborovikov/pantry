@@ -55,22 +55,23 @@ namespace Pantry
         {
             private ReadOnlySpan<char> writing;
             private int index;
+            private CompositionPart current;
             private readonly NumberFormatInfo numberFormat;
 
             public CompositionEnumerator(ReadOnlySpan<char> writing, IFormatProvider? formatProvider)
             {
                 this.writing = writing;
                 this.index = 0;
-                this.Current = default;
+                this.current = default;
                 this.numberFormat =
                     formatProvider as NumberFormatInfo ??
                     formatProvider?.GetFormat(typeof(NumberFormatInfo)) as NumberFormatInfo ??
                     NumberFormatInfo.CurrentInfo;
             }
 
-            public CompositionPart Current { get; private set; }
+            public readonly CompositionPart Current => this.current;
 
-            public CompositionEnumerator GetEnumerator() => this;
+            public readonly CompositionEnumerator GetEnumerator() => this;
 
             public bool MoveNext()
             {
@@ -128,7 +129,7 @@ namespace Pantry
                     end = this.writing.ClampStart(end, SubDigits);
                 }
 
-                this.Current = new CompositionPart(this.writing[start..end], this.index + start, part);
+                this.current = new CompositionPart(this.writing[start..end], this.index + start, part);
                 this.writing = this.writing[end..];
                 this.index += end;
 

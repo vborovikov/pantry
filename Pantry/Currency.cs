@@ -33,17 +33,18 @@
         {
             private readonly Currency currency;
             private ReadOnlySpan<char> writing;
+            private NotationSpan current;
 
             public NotationEnumerator(Currency currency, ReadOnlySpan<char> writing)
             {
                 this.currency = currency;
                 this.writing = writing.Trim();
-                this.Current = default;
+                this.current = default;
             }
 
-            public NotationSpan Current { get; private set; }
+            public readonly NotationSpan Current => this.current;
 
-            public NotationEnumerator GetEnumerator() => this;
+            public readonly NotationEnumerator GetEnumerator() => this;
 
             public bool MoveNext()
             {
@@ -66,7 +67,7 @@
                 if (endPos < 0)
                     endPos = this.writing.Length;
 
-                this.Current = new NotationSpan(this.writing[..endPos], category);
+                this.current = new NotationSpan(this.writing[..endPos], category);
                 this.writing = this.writing[endPos..];
 
                 return true;

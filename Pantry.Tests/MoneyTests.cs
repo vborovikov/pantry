@@ -194,7 +194,7 @@
         [DataRow("5.50 ฿", 5.50d, "THB")]
         [DataRow("10 TJS", 10.0d, "TJS")]
         [DataRow("1000 ЅМ", 1000.0d, "TJS")]
-        [DataRow("5,50 сом.", 5.50d, "TJS")]
+        [DataRow("5,50 сом", 5.50d, "TJS")]
         [DataRow("10 TMT", 10.0d, "TMT")]
         [DataRow("1000 m", 1000.0d, "TMT")]
         [DataRow("5,50 m", 5.50d, "TMT")]

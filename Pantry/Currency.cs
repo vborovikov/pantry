@@ -883,7 +883,7 @@
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            HkdSymbol, HkdCode, "DOLLAR", "DOLLARS"
+            HkdSymbol, HkdCode, "DOLLAR", "DOLLARS", "元"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1023,7 +1023,7 @@
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            JpySymbol, JpyCode
+            JpySymbol, JpyCode, "円"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1443,7 +1443,7 @@
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            ThbSymbol, ThbCode, "BAHT"
+            ThbSymbol, ThbCode, "BAHT", "B"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1527,7 +1527,7 @@
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            TrySymbol, "TL", "L",
+            TrySymbol, "TL", TryCode,
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]

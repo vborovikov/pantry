@@ -79,8 +79,8 @@
         private const StringComparison CodeComparison = StringComparison.OrdinalIgnoreCase;
         private const StringComparison WritingComparison = StringComparison.CurrentCultureIgnoreCase;
 
-        private static readonly Currency[] KnownCurrencies =
-        {
+        internal static readonly Currency[] KnownCurrencies =
+        [
             new RussianRuble(),
             new USDollar(),
             new Euro(),
@@ -123,12 +123,11 @@
             new TajikistaniSomoni(),
             new TurkmenistanManat(),
             new UkrainianHryvnia(),
-            new USDollar(),
             new UzbekistanSom(),
             new VietnameseDong(),
             new SpecialDrawingRights(),
             new SouthAfricanRand(),
-        };
+        ];
 
         private readonly CultureInfo culture;
         private readonly SearchValues<char> numericChars;
@@ -147,8 +146,8 @@
                     this.culture.NumberFormat.CurrencyDecimalSeparator,
                     this.culture.NumberFormat.CurrencyGroupSeparator,
                     string.Concat(this.culture.NumberFormat.NativeDigits))
+                .Order()
                 .Distinct()
-                .OrderBy(ch => ch)
                 .ToArray());
         }
 
@@ -164,11 +163,11 @@
 
         public abstract CurrencySymbolPlacement SymbolPlacement { get; }
 
-        //todo: rename to UnitShortForms
-        public abstract IReadOnlyCollection<string> MainUnitShortForms { get; }
+        public abstract IReadOnlyCollection<string> UnitShortForms { get; }
 
-        //todo: rename to SubunitShortForms
-        public abstract IReadOnlyCollection<string> FractionalUnitShortForms { get; }
+        public abstract IReadOnlyCollection<string> SubunitShortForms { get; }
+
+        internal CultureInfo Culture => this.culture;
 
         public override string ToString() => this.Code;
 
@@ -229,7 +228,7 @@
                 unit = unit.Trim('.');
                 foreach (var currency in KnownCurrencies)
                 {
-                    if (Contains(currency.MainUnitShortForms, unit) || Contains(currency.FractionalUnitShortForms, unit))
+                    if (Contains(currency.UnitShortForms, unit) || Contains(currency.SubunitShortForms, unit))
                     {
                         foundCurrency = currency;
                         break;
@@ -298,7 +297,7 @@
             {
                 if (money != default)
                 {
-                    remainder = currency.Convert(remainder, currency.FractionalUnitShortForms.First());
+                    remainder = currency.Convert(remainder, currency.SubunitShortForms.First());
                 }
                 money += new Money(remainder, currency);
             }
@@ -388,7 +387,7 @@
 
         protected decimal Convert(decimal sum, ReadOnlySpan<char> unit)
         {
-            if (!unit.IsEmpty && Contains(this.FractionalUnitShortForms, unit))
+            if (!unit.IsEmpty && Contains(this.SubunitShortForms, unit))
                 return sum / 100m;
 
             return sum;
@@ -433,16 +432,15 @@
     {
         private const string AedName = "United Arab Emirates dirham";
         private const string AedCode = "AED";
-        private const string AedSymbol = "د.إ";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            AedSymbol, "DH", "DHS", AedCode
+            "\u062f\u002e\u0625\u002e\u200f", "\u062f\u002e\u0625\u002e", "\u062f\u002e\u0625", "DH", "DHS", AedCode
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
         {
-            "FILS", "فلس"
+            "FILS", "fulūs", "fulus", "\u0641\u0644\u0633",
         };
 
         public UAEDirham() : base(CultureInfo.GetCultureInfo("ar-AE"))
@@ -451,10 +449,9 @@
 
         public override string Name => AedName;
         public override string Code => AedCode;
-        public override string Symbol => AedSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class ArmenianDram : Currency
@@ -481,8 +478,8 @@
         public override string Code => AmdCode;
         public override string Symbol => AmdSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class AustralianDollar : Currency
@@ -509,8 +506,8 @@
         public override string Code => AudCode;
         public override string Symbol => AudSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class AzerbaijaniManat : Currency
@@ -537,8 +534,8 @@
         public override string Code => AznCode;
         public override string Symbol => AznSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class BulgarianLev : Currency
@@ -565,8 +562,8 @@
         public override string Code => BgnCode;
         public override string Symbol => BgnSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class BrazilianReal : Currency
@@ -593,8 +590,8 @@
         public override string Code => BrlCode;
         public override string Symbol => BrlSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class BelarusianRuble : Currency
@@ -621,8 +618,8 @@
         public override string Code => BynCode;
         public override string Symbol => BynSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class CanadianDollar : Currency
@@ -649,8 +646,8 @@
         public override string Code => CadCode;
         public override string Symbol => CadSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SwissFranc : Currency
@@ -677,8 +674,8 @@
         public override string Code => ChfCode;
         public override string Symbol => ChfSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class ChineseYuan : Currency
@@ -705,8 +702,8 @@
         public override string Code => CnyCode;
         public override string Symbol => CnySymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class CzechKoruna : Currency
@@ -733,8 +730,8 @@
         public override string Code => CzkCode;
         public override string Symbol => CzkSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class DanishKrone : Currency
@@ -761,24 +758,23 @@
         public override string Code => DkkCode;
         public override string Symbol => DkkSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class EgyptianPound : Currency
     {
         private const string EgpName = "Egyptian pound";
         private const string EgpCode = "EGP";
-        private const string EgpSymbol = ".ج.م";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            EgpSymbol, "LE", EgpCode, "£", "E£", "£E"
+            "\u062c\u002e\u0645\u002e\u200f", "\u062c\u002e\u0645\u002e", "\u062c\u002e\u0645", "LE", "£", "E£", "£E", EgpCode
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
         {
-            "PT", "PIASTRE", "PIASTRES"
+            "PT", "PIASTRE", "PIASTRES", "piaster"
         };
 
         public EgyptianPound() : base(CultureInfo.GetCultureInfo("ar-EG"))
@@ -787,10 +783,9 @@
 
         public override string Name => EgpName;
         public override string Code => EgpCode;
-        public override string Symbol => EgpSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class Euro : Currency
@@ -820,8 +815,8 @@
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
         public string FractionalSymbol => EurFractionalSymbol;
         public CurrencySymbolPlacement FractionalSymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class BritishPound : Currency
@@ -848,8 +843,8 @@
         public override string Code => GbpCode;
         public override string Symbol => GbpSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class GeorgianLari : Currency
@@ -876,8 +871,8 @@
         public override string Code => GelCode;
         public override string Symbol => GelSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class HongKongDollar : Currency
@@ -904,8 +899,8 @@
         public override string Code => HkdCode;
         public override string Symbol => HkdSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class HungarianForint : Currency
@@ -932,8 +927,8 @@
         public override string Code => HufCode;
         public override string Symbol => HufSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class IndonesianRupiah : Currency
@@ -960,8 +955,8 @@
         public override string Code => IdrCode;
         public override string Symbol => IdrSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class IsraeliNewShekel : Currency
@@ -988,8 +983,8 @@
         public override string Code => IlsCode;
         public override string Symbol => IlsSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class IndianRupee : Currency
@@ -1016,19 +1011,19 @@
         public override string Code => InrCode;
         public override string Symbol => InrSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class JapaneseYen : Currency
     {
         private const string JpyName = "Japanese yen";
         private const string JpyCode = "JPY";
-        private const string JpySymbol = "¥";
+        private const string JpySymbol = "￥";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            JpySymbol, JpyCode, "￥"
+            JpySymbol, JpyCode
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1044,8 +1039,8 @@
         public override string Code => JpyCode;
         public override string Symbol => JpySymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class KyrgyzstaniSom : Currency
@@ -1072,8 +1067,8 @@
         public override string Code => KgsCode;
         public override string Symbol => KgsSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SouthKoreanWon : Currency
@@ -1100,8 +1095,8 @@
         public override string Code => KrwCode;
         public override string Symbol => KrwSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class KazakhstaniTenge : Currency
@@ -1128,8 +1123,8 @@
         public override string Code => KztCode;
         public override string Symbol => KztSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class MoldovanLeu : Currency
@@ -1156,8 +1151,8 @@
         public override string Code => MdlCode;
         public override string Symbol => MdlSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class MexicanPeso : Currency
@@ -1184,8 +1179,8 @@
         public override string Code => MxnCode;
         public override string Symbol => MxnSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class NorwegianKrone : Currency
@@ -1212,8 +1207,8 @@
         public override string Code => NokCode;
         public override string Symbol => NokSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class NewZealandDollar : Currency
@@ -1240,8 +1235,8 @@
         public override string Code => NzdCode;
         public override string Symbol => NzdSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class PolishZloty : Currency
@@ -1268,19 +1263,18 @@
         public override string Code => PlnCode;
         public override string Symbol => PlnSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class QatariRiyal : Currency
     {
         private const string QarName = "Qatari riyal";
         private const string QarCode = "QAR";
-        private const string QarSymbol = "ر.ق";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            QarSymbol, QarCode, "QR"
+            "\ufdfc", "\u0631\u002e\u0642\u200e", QarCode, "QR"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1294,10 +1288,9 @@
 
         public override string Name => QarName;
         public override string Code => QarCode;
-        public override string Symbol => QarSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class RussianRuble : Currency
@@ -1326,8 +1319,8 @@
         public override string Symbol => RubSymbol;
         public override string WritingSymbol => RubWritingSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class RomanianLeu : Currency
@@ -1338,7 +1331,7 @@
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            RonSymbol, RonCode
+            RonSymbol, RonCode, "leu"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1354,8 +1347,8 @@
         public override string Code => RonCode;
         public override string Symbol => RonSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SerbianDinar : Currency
@@ -1382,8 +1375,8 @@
         public override string Code => RsdCode;
         public override string Symbol => RsdSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SwedishKrona : Currency
@@ -1410,8 +1403,8 @@
         public override string Code => SekCode;
         public override string Symbol => SekSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SingaporeDollar : Currency
@@ -1438,8 +1431,8 @@
         public override string Code => SgdCode;
         public override string Symbol => SgdSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class ThaiBaht : Currency
@@ -1466,19 +1459,19 @@
         public override string Code => ThbCode;
         public override string Symbol => ThbSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class TajikistaniSomoni : Currency
     {
         private const string TjsName = "Tajikistani somoni";
         private const string TjsCode = "TJS";
-        private const string TjsSymbol = "ЅМ";
+        private const string TjsSymbol = "сом";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            TjsSymbol, TjsCode, "сом"
+            TjsSymbol, TjsCode, "SM"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1494,8 +1487,8 @@
         public override string Code => TjsCode;
         public override string Symbol => TjsSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class TurkmenistanManat : Currency
@@ -1522,8 +1515,8 @@
         public override string Code => TmtCode;
         public override string Symbol => TmtSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class TurkishLira : Currency
@@ -1549,8 +1542,8 @@
         public override string Code => TryCode;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
         public CurrencySymbolPlacement FractionalSymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class UkrainianHryvnia : Currency
@@ -1577,8 +1570,8 @@
         public override string Code => UahCode;
         public override string Symbol => UahSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class USDollar : Currency
@@ -1608,19 +1601,19 @@
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
         public string FractionalSymbol => UsdFractionalSymbol;
         public CurrencySymbolPlacement FractionalSymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class UzbekistanSom : Currency
     {
         private const string UzsName = "Uzbekistan som";
         private const string UzsCode = "UZS";
-        private const string UzsSymbol = "сўм";
+        private const string UzsSymbol = "soʻm";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            UzsSymbol, UzsCode, "soʻm"
+            UzsSymbol, UzsCode, "сўм"
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = new[]
@@ -1636,8 +1629,8 @@
         public override string Code => UzsCode;
         public override string Symbol => UzsSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class VietnameseDong : Currency
@@ -1664,19 +1657,18 @@
         public override string Code => VndCode;
         public override string Symbol => VndSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.AfterSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SpecialDrawingRights : Currency
     {
         private const string XdrName = "Special drawing rights";
         private const string XdrCode = "XDR";
-        private const string XdrSymbol = "SDR";
 
         private static readonly IReadOnlyCollection<string> mainUnitShortForms = new[]
         {
-            XdrSymbol, XdrCode
+            "SDR", XdrCode
         };
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = Array.Empty<string>();
@@ -1687,10 +1679,9 @@
 
         public override string Name => XdrName;
         public override string Code => XdrCode;
-        public override string Symbol => XdrSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
     public sealed class SouthAfricanRand : Currency
@@ -1717,7 +1708,7 @@
         public override string Code => ZarCode;
         public override string Symbol => ZarSymbol;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
-        public override IReadOnlyCollection<string> MainUnitShortForms => mainUnitShortForms;
-        public override IReadOnlyCollection<string> FractionalUnitShortForms => fractionalUnitShortForms;
+        public override IReadOnlyCollection<string> UnitShortForms => mainUnitShortForms;
+        public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 }

@@ -225,5 +225,14 @@
             Assert.AreEqual((decimal)sum, money.Sum);
             Assert.AreEqual(currencyCode, money.Currency.Code);
         }
+
+        [TestMethod]
+        public void Symbol_ComparingWithCulture_AreEqual()
+        {
+            foreach (var currency in Currency.KnownCurrencies.Where(cu => cu.Code is not "RON" and not "RSD" and not "TMT"))
+            {
+                Assert.AreEqual(currency.Culture.NumberFormat.CurrencySymbol.Trim('.'), currency.Symbol, currency.Name);
+            }
+        }
     }
 }

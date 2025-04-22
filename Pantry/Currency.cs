@@ -1,10 +1,15 @@
-﻿namespace Pantry
+namespace Pantry
 {
     using System;
     using System.Buffers;
     using System.Collections.Generic;
     using System.Globalization;
     using System.Linq;
+
+    public interface ICurrency<TSelf> where TSelf : ICurrency<TSelf>
+    {
+        static abstract Currency Currency { get; }
+    }
 
     public abstract class Currency : IEquatable<Currency>, IComparable<Currency>
     {
@@ -81,52 +86,52 @@
 
         internal static readonly Currency[] KnownCurrencies =
         [
-            new RussianRuble(),
-            new USDollar(),
-            new Euro(),
-            new TurkishLira(),
-            new UAEDirham(),
-            new ArmenianDram(),
-            new AustralianDollar(),
-            new AzerbaijaniManat(),
-            new BulgarianLev(),
-            new BrazilianReal(),
-            new BelarusianRuble(),
-            new CanadianDollar(),
-            new SwissFranc(),
-            new ChineseYuan(),
-            new CzechKoruna(),
-            new DanishKrone(),
-            new EgyptianPound(),
-            new BritishPound(),
-            new GeorgianLari(),
-            new HongKongDollar(),
-            new HungarianForint(),
-            new IndonesianRupiah(),
-            new IsraeliNewShekel(),
-            new IndianRupee(),
-            new JapaneseYen(),
-            new KyrgyzstaniSom(),
-            new SouthKoreanWon(),
-            new KazakhstaniTenge(),
-            new MoldovanLeu(),
-            new MexicanPeso(),
-            new NorwegianKrone(),
-            new NewZealandDollar(),
-            new PolishZloty(),
-            new QatariRiyal(),
-            new RomanianLeu(),
-            new SerbianDinar(),
-            new SwedishKrona(),
-            new SingaporeDollar(),
-            new ThaiBaht(),
-            new TajikistaniSomoni(),
-            new TurkmenistanManat(),
-            new UkrainianHryvnia(),
-            new UzbekistanSom(),
-            new VietnameseDong(),
-            new SpecialDrawingRights(),
-            new SouthAfricanRand(),
+            RussianRuble.Currency,
+            USDollar.Currency,
+            Euro.Currency,
+            TurkishLira.Currency,
+            UAEDirham.Currency,
+            ArmenianDram.Currency,
+            AustralianDollar.Currency,
+            AzerbaijaniManat.Currency,
+            BulgarianLev.Currency,
+            BrazilianReal.Currency,
+            BelarusianRuble.Currency,
+            CanadianDollar.Currency,
+            SwissFranc.Currency,
+            ChineseYuan.Currency,
+            CzechKoruna.Currency,
+            DanishKrone.Currency,
+            EgyptianPound.Currency,
+            BritishPound.Currency,
+            GeorgianLari.Currency,
+            HongKongDollar.Currency,
+            HungarianForint.Currency,
+            IndonesianRupiah.Currency,
+            IsraeliNewShekel.Currency,
+            IndianRupee.Currency,
+            JapaneseYen.Currency,
+            KyrgyzstaniSom.Currency,
+            SouthKoreanWon.Currency,
+            KazakhstaniTenge.Currency,
+            MoldovanLeu.Currency,
+            MexicanPeso.Currency,
+            NorwegianKrone.Currency,
+            NewZealandDollar.Currency,
+            PolishZloty.Currency,
+            QatariRiyal.Currency,
+            RomanianLeu.Currency,
+            SerbianDinar.Currency,
+            SwedishKrona.Currency,
+            SingaporeDollar.Currency,
+            ThaiBaht.Currency,
+            TajikistaniSomoni.Currency,
+            TurkmenistanManat.Currency,
+            UkrainianHryvnia.Currency,
+            UzbekistanSom.Currency,
+            VietnameseDong.Currency,
+            SpecialDrawingRights.Currency,
+            SouthAfricanRand.Currency,
         ];
 
         private readonly CultureInfo culture;
@@ -428,8 +433,10 @@
         }
     }
 
-    public sealed class UAEDirham : Currency
+    public sealed class UAEDirham : Currency, ICurrency<UAEDirham>
     {
+        private static readonly UAEDirham instance = new();
+
         private const string AedName = "United Arab Emirates dirham";
         private const string AedCode = "AED";
 
@@ -443,9 +450,12 @@
             "FILS", "fulūs", "fulus", "\u0641\u0644\u0633",
         };
 
-        public UAEDirham() : base(CultureInfo.GetCultureInfo("ar-AE"))
+        private UAEDirham() : base(CultureInfo.GetCultureInfo("ar-AE"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => AedName;
         public override string Code => AedCode;
@@ -454,8 +464,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class ArmenianDram : Currency
+    public sealed class ArmenianDram : Currency, ICurrency<ArmenianDram>
     {
+        private static readonly ArmenianDram instance = new();
+
         private const string AmdName = "Armenian dram";
         private const string AmdCode = "AMD";
         private const string AmdSymbol = "֏";
@@ -470,9 +482,12 @@
             "LUMA", "լումա"
         };
 
-        public ArmenianDram() : base(CultureInfo.GetCultureInfo("hy-AM"))
+        private ArmenianDram() : base(CultureInfo.GetCultureInfo("hy-AM"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => AmdName;
         public override string Code => AmdCode;
@@ -482,8 +497,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class AustralianDollar : Currency
+    public sealed class AustralianDollar : Currency, ICurrency<AustralianDollar>
     {
+        private static readonly AustralianDollar instance = new();
+
         private const string AudName = "Australian dollar";
         private const string AudCode = "AUD";
         private const string AudSymbol = "$";
@@ -498,9 +515,12 @@
             "CENT", "CENTS"
         };
 
-        public AustralianDollar() : base(CultureInfo.GetCultureInfo("en-AU"))
+        private AustralianDollar() : base(CultureInfo.GetCultureInfo("en-AU"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => AudName;
         public override string Code => AudCode;
@@ -510,8 +530,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class AzerbaijaniManat : Currency
+    public sealed class AzerbaijaniManat : Currency, ICurrency<AzerbaijaniManat>
     {
+        private static readonly AzerbaijaniManat instance = new();
+
         private const string AznName = "Azerbaijani manat";
         private const string AznCode = "AZN";
         private const string AznSymbol = "₼";
@@ -526,9 +548,12 @@
             "gapik", "gapiks", "QƏPİK", "QEPIC"
         };
 
-        public AzerbaijaniManat() : base(CultureInfo.GetCultureInfo("az-AZ"))
+        private AzerbaijaniManat() : base(CultureInfo.GetCultureInfo("az-AZ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => AznName;
         public override string Code => AznCode;
@@ -538,8 +563,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class BulgarianLev : Currency
+    public sealed class BulgarianLev : Currency, ICurrency<BulgarianLev>
     {
+        private static readonly BulgarianLev instance = new();
+
         private const string BgnName = "Bulgarian lev";
         private const string BgnCode = "BGN";
         private const string BgnSymbol = "лв";
@@ -554,9 +581,12 @@
             "СТОТИНКА", "STOTINKA", "stotinki"
         };
 
-        public BulgarianLev() : base(CultureInfo.GetCultureInfo("bg-BG"))
+        private BulgarianLev() : base(CultureInfo.GetCultureInfo("bg-BG"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => BgnName;
         public override string Code => BgnCode;
@@ -566,8 +596,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class BrazilianReal : Currency
+    public sealed class BrazilianReal : Currency, ICurrency<BrazilianReal>
     {
+        private static readonly BrazilianReal instance = new();
+
         private const string BrlName = "Brazilian real";
         private const string BrlCode = "BRL";
         private const string BrlSymbol = "R$";
@@ -582,9 +614,12 @@
             "CENTAVO", "CENTAVOS"
         };
 
-        public BrazilianReal() : base(CultureInfo.GetCultureInfo("pt-BR"))
+        private BrazilianReal() : base(CultureInfo.GetCultureInfo("pt-BR"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => BrlName;
         public override string Code => BrlCode;
@@ -594,8 +629,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class BelarusianRuble : Currency
+    public sealed class BelarusianRuble : Currency, ICurrency<BelarusianRuble>
     {
+        private static readonly BelarusianRuble instance = new();
+
         private const string BynName = "Belarusian ruble";
         private const string BynCode = "BYN";
         private const string BynSymbol = "Br";
@@ -610,9 +647,12 @@
             "KAPEIKA", "KAPEYKA"
         };
 
-        public BelarusianRuble() : base(CultureInfo.GetCultureInfo("be-BY"))
+        private BelarusianRuble() : base(CultureInfo.GetCultureInfo("be-BY"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => BynName;
         public override string Code => BynCode;
@@ -622,8 +662,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class CanadianDollar : Currency
+    public sealed class CanadianDollar : Currency, ICurrency<CanadianDollar>
     {
+        private static readonly CanadianDollar instance = new();
+
         private const string CadName = "Canadian dollar";
         private const string CadCode = "CAD";
         private const string CadSymbol = "$";
@@ -638,9 +680,12 @@
             "CENT", "CENTS"
         };
 
-        public CanadianDollar() : base(CultureInfo.GetCultureInfo("en-CA"))
+        private CanadianDollar() : base(CultureInfo.GetCultureInfo("en-CA"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => CadName;
         public override string Code => CadCode;
@@ -650,8 +695,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SwissFranc : Currency
+    public sealed class SwissFranc : Currency, ICurrency<SwissFranc>
     {
+        private static readonly SwissFranc instance = new();
+
         private const string ChfName = "Swiss franc";
         private const string ChfCode = "CHF";
         private const string ChfSymbol = "CHF";
@@ -666,9 +713,12 @@
             "RAP", "CENTIME", "CENTIMES", "RP."
         };
 
-        public SwissFranc() : base(CultureInfo.GetCultureInfo("de-CH"))
+        private SwissFranc() : base(CultureInfo.GetCultureInfo("de-CH"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => ChfName;
         public override string Code => ChfCode;
@@ -678,8 +728,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class ChineseYuan : Currency
+    public sealed class ChineseYuan : Currency, ICurrency<ChineseYuan>
     {
+        private static readonly ChineseYuan instance = new();
+
         private const string CnyName = "Chinese yuan";
         private const string CnyCode = "CNY";
         private const string CnySymbol = "¥";
@@ -694,9 +746,12 @@
             "JIAO", "FEN"
         };
 
-        public ChineseYuan() : base(CultureInfo.GetCultureInfo("zh-CN"))
+        private ChineseYuan() : base(CultureInfo.GetCultureInfo("zh-CN"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => CnyName;
         public override string Code => CnyCode;
@@ -706,8 +761,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class CzechKoruna : Currency
+    public sealed class CzechKoruna : Currency, ICurrency<CzechKoruna>
     {
+        private static readonly CzechKoruna instance = new();
+
         private const string CzkName = "Czech koruna";
         private const string CzkCode = "CZK";
         private const string CzkSymbol = "Kč";
@@ -722,9 +779,12 @@
             "HALÉŘ", "HALER"
         };
 
-        public CzechKoruna() : base(CultureInfo.GetCultureInfo("cs-CZ"))
+        private CzechKoruna() : base(CultureInfo.GetCultureInfo("cs-CZ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => CzkName;
         public override string Code => CzkCode;
@@ -734,8 +794,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class DanishKrone : Currency
+    public sealed class DanishKrone : Currency, ICurrency<DanishKrone>
     {
+        private static readonly DanishKrone instance = new();
+
         private const string DkkName = "Danish krone";
         private const string DkkCode = "DKK";
         private const string DkkSymbol = "kr";
@@ -750,9 +812,12 @@
             "ØRE", "ORE"
         };
 
-        public DanishKrone() : base(CultureInfo.GetCultureInfo("da-DK"))
+        private DanishKrone() : base(CultureInfo.GetCultureInfo("da-DK"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => DkkName;
         public override string Code => DkkCode;
@@ -762,8 +827,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class EgyptianPound : Currency
+    public sealed class EgyptianPound : Currency, ICurrency<EgyptianPound>
     {
+        private static readonly EgyptianPound instance = new();
+
         private const string EgpName = "Egyptian pound";
         private const string EgpCode = "EGP";
 
@@ -777,9 +844,12 @@
             "PT", "PIASTRE", "PIASTRES", "piaster"
         };
 
-        public EgyptianPound() : base(CultureInfo.GetCultureInfo("ar-EG"))
+        private EgyptianPound() : base(CultureInfo.GetCultureInfo("ar-EG"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => EgpName;
         public override string Code => EgpCode;
@@ -788,8 +858,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class Euro : Currency
+    public sealed class Euro : Currency, ICurrency<Euro>
     {
+        private static readonly Euro instance = new();
+
         private const string EurName = "Euro";
         private const string EurCode = "EUR";
         private const string EurSymbol = "\u20ac";
@@ -805,9 +877,12 @@
             EurFractionalSymbol, "C", "CC", "CT", "CENT", "CENTS",
         };
 
-        public Euro() : base(CultureInfo.GetCultureInfo("fr-FR"))
+        private Euro() : base(CultureInfo.GetCultureInfo("fr-FR"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => EurName;
         public override string Code => EurCode;
@@ -819,8 +894,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class BritishPound : Currency
+    public sealed class BritishPound : Currency, ICurrency<BritishPound>
     {
+        private static readonly BritishPound instance = new();
+
         private const string GbpName = "British pound";
         private const string GbpCode = "GBP";
         private const string GbpSymbol = "£";
@@ -835,9 +912,12 @@
             "PENCE", "PENNY"
         };
 
-        public BritishPound() : base(CultureInfo.GetCultureInfo("en-GB"))
+        private BritishPound() : base(CultureInfo.GetCultureInfo("en-GB"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => GbpName;
         public override string Code => GbpCode;
@@ -847,8 +927,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class GeorgianLari : Currency
+    public sealed class GeorgianLari : Currency, ICurrency<GeorgianLari>
     {
+        private static readonly GeorgianLari instance = new();
+
         private const string GelName = "Georgian lari";
         private const string GelCode = "GEL";
         private const string GelSymbol = "₾";
@@ -863,9 +945,12 @@
             "TETRI"
         };
 
-        public GeorgianLari() : base(CultureInfo.GetCultureInfo("ka-GE"))
+        private GeorgianLari() : base(CultureInfo.GetCultureInfo("ka-GE"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => GelName;
         public override string Code => GelCode;
@@ -875,8 +960,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class HongKongDollar : Currency
+    public sealed class HongKongDollar : Currency, ICurrency<HongKongDollar>
     {
+        private static readonly HongKongDollar instance = new();
+
         private const string HkdName = "Hong Kong dollar";
         private const string HkdCode = "HKD";
         private const string HkdSymbol = "HK$";
@@ -891,9 +978,12 @@
             "CENT", "CENTS"
         };
 
-        public HongKongDollar() : base(CultureInfo.GetCultureInfo("zh-HK"))
+        private HongKongDollar() : base(CultureInfo.GetCultureInfo("zh-HK"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => HkdName;
         public override string Code => HkdCode;
@@ -903,8 +993,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class HungarianForint : Currency
+    public sealed class HungarianForint : Currency, ICurrency<HungarianForint>
     {
+        private static readonly HungarianForint instance = new();
+
         private const string HufName = "Hungarian forint";
         private const string HufCode = "HUF";
         private const string HufSymbol = "Ft";
@@ -919,9 +1011,12 @@
             "FILLER"
         };
 
-        public HungarianForint() : base(CultureInfo.GetCultureInfo("hu-HU"))
+        private HungarianForint() : base(CultureInfo.GetCultureInfo("hu-HU"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => HufName;
         public override string Code => HufCode;
@@ -931,8 +1026,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class IndonesianRupiah : Currency
+    public sealed class IndonesianRupiah : Currency, ICurrency<IndonesianRupiah>
     {
+        private static readonly IndonesianRupiah instance = new();
+
         private const string IdrName = "Indonesian rupiah";
         private const string IdrCode = "IDR";
         private const string IdrSymbol = "Rp";
@@ -947,9 +1044,12 @@
             "SEN"
         };
 
-        public IndonesianRupiah() : base(CultureInfo.GetCultureInfo("id-ID"))
+        private IndonesianRupiah() : base(CultureInfo.GetCultureInfo("id-ID"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => IdrName;
         public override string Code => IdrCode;
@@ -959,8 +1059,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class IsraeliNewShekel : Currency
+    public sealed class IsraeliNewShekel : Currency, ICurrency<IsraeliNewShekel>
     {
+        private static readonly IsraeliNewShekel instance = new();
+
         private const string IlsName = "Israeli new shekel";
         private const string IlsCode = "ILS";
         private const string IlsSymbol = "₪";
@@ -975,9 +1077,12 @@
             "AGOROT", "AGORA"
         };
 
-        public IsraeliNewShekel() : base(CultureInfo.GetCultureInfo("he-IL"))
+        private IsraeliNewShekel() : base(CultureInfo.GetCultureInfo("he-IL"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => IlsName;
         public override string Code => IlsCode;
@@ -987,8 +1092,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class IndianRupee : Currency
+    public sealed class IndianRupee : Currency, ICurrency<IndianRupee>
     {
+        private static readonly IndianRupee instance = new();
+
         private const string InrName = "Indian rupee";
         private const string InrCode = "INR";
         private const string InrSymbol = "₹";
@@ -1003,9 +1110,12 @@
             "PAISE", "PAISA"
         };
 
-        public IndianRupee() : base(CultureInfo.GetCultureInfo("en-IN"))
+        private IndianRupee() : base(CultureInfo.GetCultureInfo("en-IN"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => InrName;
         public override string Code => InrCode;
@@ -1015,8 +1125,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class JapaneseYen : Currency
+    public sealed class JapaneseYen : Currency, ICurrency<JapaneseYen>
     {
+        private static readonly JapaneseYen instance = new();
+
         private const string JpyName = "Japanese yen";
         private const string JpyCode = "JPY";
         private const string JpySymbol = "￥";
@@ -1031,9 +1143,12 @@
             "SEN"
         };
 
-        public JapaneseYen() : base(CultureInfo.GetCultureInfo("ja-JP"))
+        private JapaneseYen() : base(CultureInfo.GetCultureInfo("ja-JP"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => JpyName;
         public override string Code => JpyCode;
@@ -1043,8 +1158,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class KyrgyzstaniSom : Currency
+    public sealed class KyrgyzstaniSom : Currency, ICurrency<KyrgyzstaniSom>
     {
+        private static readonly KyrgyzstaniSom instance = new();
+
         private const string KgsName = "Kyrgyzstani som";
         private const string KgsCode = "KGS";
         private const string KgsSymbol = "сом";
@@ -1059,9 +1176,12 @@
             "TYIYN", "TYIN"
         };
 
-        public KyrgyzstaniSom() : base(CultureInfo.GetCultureInfo("ky-KG"))
+        private KyrgyzstaniSom() : base(CultureInfo.GetCultureInfo("ky-KG"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => KgsName;
         public override string Code => KgsCode;
@@ -1071,8 +1191,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SouthKoreanWon : Currency
+    public sealed class SouthKoreanWon : Currency, ICurrency<SouthKoreanWon>
     {
+        private static readonly SouthKoreanWon instance = new();
+
         private const string KrwName = "South Korean won";
         private const string KrwCode = "KRW";
         private const string KrwSymbol = "₩";
@@ -1087,9 +1209,12 @@
             "JEON"
         };
 
-        public SouthKoreanWon() : base(CultureInfo.GetCultureInfo("ko-KR"))
+        private SouthKoreanWon() : base(CultureInfo.GetCultureInfo("ko-KR"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => KrwName;
         public override string Code => KrwCode;
@@ -1099,8 +1224,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class KazakhstaniTenge : Currency
+    public sealed class KazakhstaniTenge : Currency, ICurrency<KazakhstaniTenge>
     {
+        private static readonly KazakhstaniTenge instance = new();
+
         private const string KztName = "Kazakhstani tenge";
         private const string KztCode = "KZT";
         private const string KztSymbol = "₸";
@@ -1115,9 +1242,12 @@
             "TIYN"
         };
 
-        public KazakhstaniTenge() : base(CultureInfo.GetCultureInfo("kk-KZ"))
+        private KazakhstaniTenge() : base(CultureInfo.GetCultureInfo("kk-KZ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => KztName;
         public override string Code => KztCode;
@@ -1127,8 +1257,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class MoldovanLeu : Currency
+    public sealed class MoldovanLeu : Currency, ICurrency<MoldovanLeu>
     {
+        private static readonly MoldovanLeu instance = new();
+
         private const string MdlName = "Moldovan leu";
         private const string MdlCode = "MDL";
         private const string MdlSymbol = "L";
@@ -1143,9 +1275,12 @@
             "BAN", "BANI"
         };
 
-        public MoldovanLeu() : base(CultureInfo.GetCultureInfo("ro-MD"))
+        private MoldovanLeu() : base(CultureInfo.GetCultureInfo("ro-MD"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => MdlName;
         public override string Code => MdlCode;
@@ -1155,8 +1290,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class MexicanPeso : Currency
+    public sealed class MexicanPeso : Currency, ICurrency<MexicanPeso>
     {
+        private static readonly MexicanPeso instance = new();
+
         private const string MxnName = "Mexican peso";
         private const string MxnCode = "MXN";
         private const string MxnSymbol = "$";
@@ -1171,9 +1308,12 @@
             "CENTAVO", "CENTAVOS"
         };
 
-        public MexicanPeso() : base(CultureInfo.GetCultureInfo("es-MX"))
+        private MexicanPeso() : base(CultureInfo.GetCultureInfo("es-MX"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => MxnName;
         public override string Code => MxnCode;
@@ -1183,8 +1323,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class NorwegianKrone : Currency
+    public sealed class NorwegianKrone : Currency, ICurrency<NorwegianKrone>
     {
+        private static readonly NorwegianKrone instance = new();
+
         private const string NokName = "Norwegian krone";
         private const string NokCode = "NOK";
         private const string NokSymbol = "kr";
@@ -1199,9 +1341,12 @@
             "ØRE", "ORE"
         };
 
-        public NorwegianKrone() : base(CultureInfo.GetCultureInfo("nb-NO"))
+        private NorwegianKrone() : base(CultureInfo.GetCultureInfo("nb-NO"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => NokName;
         public override string Code => NokCode;
@@ -1211,8 +1356,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class NewZealandDollar : Currency
+    public sealed class NewZealandDollar : Currency, ICurrency<NewZealandDollar>
     {
+        private static readonly NewZealandDollar instance = new();
+
         private const string NzdName = "New Zealand dollar";
         private const string NzdCode = "NZD";
         private const string NzdSymbol = "$";
@@ -1227,9 +1374,12 @@
             "CENT", "CENTS"
         };
 
-        public NewZealandDollar() : base(CultureInfo.GetCultureInfo("en-NZ"))
+        private NewZealandDollar() : base(CultureInfo.GetCultureInfo("en-NZ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => NzdName;
         public override string Code => NzdCode;
@@ -1239,8 +1389,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class PolishZloty : Currency
+    public sealed class PolishZloty : Currency, ICurrency<PolishZloty>
     {
+        private static readonly PolishZloty instance = new();
+
         private const string PlnName = "Polish złoty";
         private const string PlnCode = "PLN";
         private const string PlnSymbol = "zł";
@@ -1255,9 +1407,12 @@
             "GROSZ", "GR"
         };
 
-        public PolishZloty() : base(CultureInfo.GetCultureInfo("pl-PL"))
+        private PolishZloty() : base(CultureInfo.GetCultureInfo("pl-PL"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => PlnName;
         public override string Code => PlnCode;
@@ -1267,8 +1422,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class QatariRiyal : Currency
+    public sealed class QatariRiyal : Currency, ICurrency<QatariRiyal>
     {
+        private static readonly QatariRiyal instance = new();
+
         private const string QarName = "Qatari riyal";
         private const string QarCode = "QAR";
 
@@ -1282,9 +1439,12 @@
             "DIRHAM", "DERHAM"
         };
 
-        public QatariRiyal() : base(CultureInfo.GetCultureInfo("ar-QA"))
+        private QatariRiyal() : base(CultureInfo.GetCultureInfo("ar-QA"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => QarName;
         public override string Code => QarCode;
@@ -1293,8 +1453,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class RussianRuble : Currency
+    public sealed class RussianRuble : Currency, ICurrency<RussianRuble>
     {
+        private static readonly RussianRuble instance = new();
+
         private const string RubName = "Russian ruble";
         private const string RubCode = "RUB";
         private const string RubSymbol = "\u20bd";
@@ -1310,9 +1472,11 @@
             "КОП", "К"
         };
 
-        public RussianRuble() : base(CultureInfo.GetCultureInfo("ru-RU"))
+        private RussianRuble() : base(CultureInfo.GetCultureInfo("ru-RU"))
         {
         }
+
+        public static Currency Currency => instance;
 
         public override string Name => RubName;
         public override string Code => RubCode;
@@ -1323,8 +1487,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class RomanianLeu : Currency
+    public sealed class RomanianLeu : Currency, ICurrency<RomanianLeu>
     {
+        private static readonly RomanianLeu instance = new();
+
         private const string RonName = "Romanian leu";
         private const string RonCode = "RON";
         private const string RonSymbol = "lei";
@@ -1339,9 +1505,12 @@
             "BAN", "BANI"
         };
 
-        public RomanianLeu() : base(CultureInfo.GetCultureInfo("ro-RO"))
+        private RomanianLeu() : base(CultureInfo.GetCultureInfo("ro-RO"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => RonName;
         public override string Code => RonCode;
@@ -1351,8 +1520,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SerbianDinar : Currency
+    public sealed class SerbianDinar : Currency, ICurrency<SerbianDinar>
     {
+        private static readonly SerbianDinar instance = new();
+
         private const string RsdName = "Serbian dinar";
         private const string RsdCode = "RSD";
         private const string RsdSymbol = "дин";
@@ -1367,9 +1538,12 @@
             "PARA"
         };
 
-        public SerbianDinar() : base(CultureInfo.GetCultureInfo("sr-RS"))
+        private SerbianDinar() : base(CultureInfo.GetCultureInfo("sr-RS"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => RsdName;
         public override string Code => RsdCode;
@@ -1379,8 +1553,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SwedishKrona : Currency
+    public sealed class SwedishKrona : Currency, ICurrency<SwedishKrona>
     {
+        private static readonly SwedishKrona instance = new();
+
         private const string SekName = "Swedish krona";
         private const string SekCode = "SEK";
         private const string SekSymbol = "kr";
@@ -1395,9 +1571,12 @@
             "ÖRE", "ORE"
         };
 
-        public SwedishKrona() : base(CultureInfo.GetCultureInfo("sv-SE"))
+        private SwedishKrona() : base(CultureInfo.GetCultureInfo("sv-SE"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => SekName;
         public override string Code => SekCode;
@@ -1407,8 +1586,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SingaporeDollar : Currency
+    public sealed class SingaporeDollar : Currency, ICurrency<SingaporeDollar>
     {
+        private static readonly SingaporeDollar instance = new();
+
         private const string SgdName = "Singapore dollar";
         private const string SgdCode = "SGD";
         private const string SgdSymbol = "$";
@@ -1423,9 +1604,12 @@
             "CENT", "CENTS"
         };
 
-        public SingaporeDollar() : base(CultureInfo.GetCultureInfo("en-SG"))
+        private SingaporeDollar() : base(CultureInfo.GetCultureInfo("en-SG"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => SgdName;
         public override string Code => SgdCode;
@@ -1435,8 +1619,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class ThaiBaht : Currency
+    public sealed class ThaiBaht : Currency, ICurrency<ThaiBaht>
     {
+        private static readonly ThaiBaht instance = new();
+
         private const string ThbName = "Thai baht";
         private const string ThbCode = "THB";
         private const string ThbSymbol = "฿";
@@ -1451,9 +1637,12 @@
             "SATANG"
         };
 
-        public ThaiBaht() : base(CultureInfo.GetCultureInfo("th-TH"))
+        private ThaiBaht() : base(CultureInfo.GetCultureInfo("th-TH"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => ThbName;
         public override string Code => ThbCode;
@@ -1463,8 +1652,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class TajikistaniSomoni : Currency
+    public sealed class TajikistaniSomoni : Currency, ICurrency<TajikistaniSomoni>
     {
+        private static readonly TajikistaniSomoni instance = new();
+
         private const string TjsName = "Tajikistani somoni";
         private const string TjsCode = "TJS";
         private const string TjsSymbol = "сом";
@@ -1479,9 +1670,12 @@
             "DIRAM", "DIRAMS"
         };
 
-        public TajikistaniSomoni() : base(CultureInfo.GetCultureInfo("tg-TJ"))
+        private TajikistaniSomoni() : base(CultureInfo.GetCultureInfo("tg-TJ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => TjsName;
         public override string Code => TjsCode;
@@ -1491,8 +1685,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class TurkmenistanManat : Currency
+    public sealed class TurkmenistanManat : Currency, ICurrency<TurkmenistanManat>
     {
+        private static readonly TurkmenistanManat instance = new();
+
         private const string TmtName = "Turkmenistan manat";
         private const string TmtCode = "TMT";
         private const string TmtSymbol = "m";
@@ -1507,9 +1703,12 @@
             "TENNESI", "TENNE"
         };
 
-        public TurkmenistanManat() : base(CultureInfo.GetCultureInfo("tk-TM"))
+        private TurkmenistanManat() : base(CultureInfo.GetCultureInfo("tk-TM"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => TmtName;
         public override string Code => TmtCode;
@@ -1519,8 +1718,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class TurkishLira : Currency
+    public sealed class TurkishLira : Currency, ICurrency<TurkishLira>
     {
+        private static readonly TurkishLira instance = new();
+
         private const string TryName = "Turkish lira";
         private const string TryCode = "TRY";
         private const string TrySymbol = "\u20ba";
@@ -1538,6 +1739,9 @@
         public TurkishLira()
             : base(CultureInfo.GetCultureInfo("tr-TR")) { }
 
+        /// <inheritdoc />
+        public static Currency Currency => instance;
+
         public override string Name => TryName;
         public override string Code => TryCode;
         public override CurrencySymbolPlacement SymbolPlacement => CurrencySymbolPlacement.BeforeSum;
@@ -1546,8 +1750,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class UkrainianHryvnia : Currency
+    public sealed class UkrainianHryvnia : Currency, ICurrency<UkrainianHryvnia>
     {
+        private static readonly UkrainianHryvnia instance = new();
+
         private const string UahName = "Ukrainian hryvnia";
         private const string UahCode = "UAH";
         private const string UahSymbol = "₴";
@@ -1562,9 +1768,12 @@
             "КОП", "КОПІЙКА", "KOPIIKA"
         };
 
-        public UkrainianHryvnia() : base(CultureInfo.GetCultureInfo("uk-UA"))
+        private UkrainianHryvnia() : base(CultureInfo.GetCultureInfo("uk-UA"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => UahName;
         public override string Code => UahCode;
@@ -1574,8 +1783,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class USDollar : Currency
+    public sealed class USDollar : Currency, ICurrency<USDollar>
     {
+        private static readonly USDollar instance = new();
+
         private const string UsdName = "United States dollar";
         private const string UsdCode = "USD";
         private const string UsdSymbol = "$";
@@ -1591,9 +1802,12 @@
             UsdFractionalSymbol, "C", "CC", "CT", "CENT", "CENTS",
         };
 
-        public USDollar() : base(CultureInfo.GetCultureInfo("en-US"))
+        private USDollar() : base(CultureInfo.GetCultureInfo("en-US"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => UsdName;
         public override string Code => UsdCode;
@@ -1605,8 +1819,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class UzbekistanSom : Currency
+    public sealed class UzbekistanSom : Currency, ICurrency<UzbekistanSom>
     {
+        private static readonly UzbekistanSom instance = new();
+
         private const string UzsName = "Uzbekistan som";
         private const string UzsCode = "UZS";
         private const string UzsSymbol = "soʻm";
@@ -1621,9 +1837,12 @@
             "TIYIN", "TIYINS"
         };
 
-        public UzbekistanSom() : base(CultureInfo.GetCultureInfo("uz-UZ"))
+        private UzbekistanSom() : base(CultureInfo.GetCultureInfo("uz-UZ"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => UzsName;
         public override string Code => UzsCode;
@@ -1633,8 +1852,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class VietnameseDong : Currency
+    public sealed class VietnameseDong : Currency, ICurrency<VietnameseDong>
     {
+        private static readonly VietnameseDong instance = new();
+
         private const string VndName = "Vietnamese dong";
         private const string VndCode = "VND";
         private const string VndSymbol = "₫";
@@ -1649,9 +1870,12 @@
             "XU"
         };
 
-        public VietnameseDong() : base(CultureInfo.GetCultureInfo("vi-VN"))
+        private VietnameseDong() : base(CultureInfo.GetCultureInfo("vi-VN"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => VndName;
         public override string Code => VndCode;
@@ -1661,8 +1885,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SpecialDrawingRights : Currency
+    public sealed class SpecialDrawingRights : Currency, ICurrency<SpecialDrawingRights>
     {
+        private static readonly SpecialDrawingRights instance = new();
+
         private const string XdrName = "Special drawing rights";
         private const string XdrCode = "XDR";
 
@@ -1673,9 +1899,12 @@
 
         private static readonly IReadOnlyCollection<string> fractionalUnitShortForms = Array.Empty<string>();
 
-        public SpecialDrawingRights() : base(CultureInfo.InvariantCulture)
+        private SpecialDrawingRights() : base(CultureInfo.InvariantCulture)
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => XdrName;
         public override string Code => XdrCode;
@@ -1684,8 +1913,10 @@
         public override IReadOnlyCollection<string> SubunitShortForms => fractionalUnitShortForms;
     }
 
-    public sealed class SouthAfricanRand : Currency
+    public sealed class SouthAfricanRand : Currency, ICurrency<SouthAfricanRand>
     {
+        private static readonly SouthAfricanRand instance = new();
+
         private const string ZarName = "South African rand";
         private const string ZarCode = "ZAR";
         private const string ZarSymbol = "R";
@@ -1700,9 +1931,12 @@
             "CENT", "CENTS"
         };
 
-        public SouthAfricanRand() : base(CultureInfo.GetCultureInfo("en-ZA"))
+        private SouthAfricanRand() : base(CultureInfo.GetCultureInfo("en-ZA"))
         {
         }
+
+        /// <inheritdoc />
+        public static Currency Currency => instance;
 
         public override string Name => ZarName;
         public override string Code => ZarCode;
